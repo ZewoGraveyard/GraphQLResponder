@@ -2,7 +2,7 @@
 import GraphQL
 import Graphiti
 
-let noRootValue: Void = Void()
+public let noRootValue: Void = Void()
 
 extension MediaType {
     public static var html: MediaType {
