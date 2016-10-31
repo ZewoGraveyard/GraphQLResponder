@@ -105,5 +105,5 @@ This project is released under the MIT license. See [LICENSE](LICENSE) for detai
 [travis-url]: https://travis-ci.org/Zewo/GraphQLResponder
 [codecov-badge]: https://codecov.io/gh/Zewo/GraphQLResponder/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/Zewo/GraphQLResponder
-[codebeat-badge]: https://codebeat.co/badges/7ef0c3f0-90dc-4d84-a679-2dd962286013
+[codebeat-badge]: https://codebeat.co/badges/97fc8ffa-eff3-495f-b61d-b3c5d29f2280
 [codebeat-url]: https://codebeat.co/projects/github-com-zewo-graphqlresponder
