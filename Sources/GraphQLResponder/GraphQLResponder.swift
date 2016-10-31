@@ -10,25 +10,25 @@ extension MediaType {
     }
 }
 
-struct GraphQLResponder<Root> : Responder {
+public struct GraphQLResponder<Root> : Responder {
     let schema: Schema<Root>
     let graphiql: Bool
     let rootValue: Root
     let contextValue: Any?
 
-    init(
+    public init(
         schema: Schema<Root>,
         graphiql: Bool = false,
         rootValue: Root,
         contextValue: Any? = nil
-    ) {
+        ) {
         self.schema = schema
         self.graphiql = graphiql
         self.rootValue = rootValue
         self.contextValue = contextValue
     }
 
-    func respond(to request: Request) throws -> Response {
+    public func respond(to request: Request) throws -> Response {
         var query: String? = nil
         var variables: [String: GraphQL.Map]? = nil
         var operationName: String? = nil
@@ -165,11 +165,11 @@ func convert(map: GraphQL.Map) -> Axis.Map {
         return .array(array.map({ convert(map: $0) }))
     case .dictionary(let dictionary):
         var dict: [String: Axis.Map] = [:]
-
+        
         for (key, value) in dictionary {
             dict[key] = convert(map: value)
         }
-
+        
         return .dictionary(dict)
     }
 }
