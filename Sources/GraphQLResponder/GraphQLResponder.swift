@@ -4,6 +4,12 @@ import Graphiti
 
 let noRootValue: Void = Void()
 
+extension MediaType {
+    public static var html: MediaType {
+        return MediaType(type: "text", subtype: "html", parameters: ["charset": "utf-8"])
+    }
+}
+
 struct GraphQLResponder<Root> : Responder {
     let schema: Schema<Root>
     let graphiql: Bool
@@ -12,7 +18,7 @@ struct GraphQLResponder<Root> : Responder {
 
     init(
         schema: Schema<Root>,
-        graphiql: Bool = true,
+        graphiql: Bool = false,
         rootValue: Root,
         contextValue: Any? = nil
     ) {
@@ -72,19 +78,47 @@ struct GraphQLResponder<Root> : Responder {
 
         // TODO: Parse the body from Content-Type
 
-        guard let graphQLQuery = query else {
-            throw HTTPError.badRequest(body: "Query required.")
+        let showGraphiql = graphiql && !(raw ?? false)
+
+        if !showGraphiql {
+            guard let graphQLQuery = query else {
+                throw HTTPError.badRequest(body: "Must provide query string.")
+            }
+
+            let result = try schema.execute(
+                request: graphQLQuery,
+                rootValue: rootValue,
+                contextValue: contextValue ?? request,
+                variableValues: variables ?? [:],
+                operationName: operationName
+            )
+
+            return Response(content: convert(map: result))
+        } else {
+            var result: GraphQL.Map? = nil
+
+            if let graphQLQuery = query {
+                result = try schema.execute(
+                    request: graphQLQuery,
+                    rootValue: rootValue,
+                    contextValue: contextValue ?? request,
+                    variableValues: variables ?? [:],
+                    operationName: operationName
+                )
+            }
+
+            let html = renderGraphiQL(
+                query: query,
+                variables: variables,
+                operationName: operationName,
+                result: result
+            )
+
+            // TODO: Add an initializer that takes body and contentType to HTTP
+            var response = Response(body: html)
+            response.contentType = .html
+            return response
         }
-
-        let result = try schema.execute(
-            request: graphQLQuery,
-            rootValue: rootValue,
-            contextValue: contextValue ?? request,
-            variableValues: variables ?? [:],
-            operationName: operationName
-        )
-
-        return Response(content: convert(map: result))
     }
 }
 
