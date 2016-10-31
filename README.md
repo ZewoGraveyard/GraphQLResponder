@@ -26,12 +26,9 @@ let package = Package(
 `GraphQLResponder` has the following parameters:
 
 - **`schema`**: A `Schema` instance from [`Graphiti`](https://github.com/GraphQLSwift/Graphiti). A `Schema` *must* be provided.
+- **`graphiQL `**: If `true`, presents [GraphiQL](https://github.com/graphql/graphiql) when the GraphQL endpoint is loaded in a browser. We recommend that you set `graphiql` to `true` when your app is in development because it's quite useful. You may or may not want it in production.
 - **`rootValue`**: A value to pass as the `rootValue` to the schema's `execute` function from [`Graphiti`](https://github.com/GraphQLSwift/Graphiti).
 - **`contextValue`**: A value to pass as the `contextValue` to the schema's `execute` function from [`Graphiti`](https://github.com/GraphQLSwift/Graphiti). If `context` is not provided, the `request` struct is passed as the context.
-
-<!---
-- **`graphiql `**: If `true`, presents [GraphiQL](https://github.com/graphql/graphiql) when the GraphQL endpoint is loaded in a browser. We recommend that you set `graphiql` to `true` when your app is in development, because it's quite useful. You may or may not want it in production.
--->
 
 ### Request Parameters
 
@@ -40,10 +37,7 @@ Once installed as a reponder, `GraphQLResponder` will accept requests with the p
 - **`query`**: A string GraphQL document to be executed.
 - **`operationName`**: If the provided query contains multiple named operations, this specifies which operation should be executed. If not provided, a 400 error will be returned if the query contains multiple named operations.
 - **`variables`**: The runtime values to use for any GraphQL query variables as a JSON object. (Currently not supported in the URL's query-string)
-
-<!---
 - **`raw`**: If the `graphiql` option is enabled and the raw parameter is provided raw JSON will always be returned instead of GraphiQL even when loaded from a browser.
--->
 
 `GraphQLResponder` will first look for each parameter in the URL's query-string:
 
@@ -69,7 +63,7 @@ let schema = try Schema<Void> { schema in
     }
 }
 
-let graphql = GraphQLResponder(schema: schema, rootValue: noRootValue)
+let graphql = GraphQLResponder(schema: schema, graphiQL: true, rootValue: noRootValue)
 
 let router = BasicRouter { route in
     route.add(methods: [.get, .post], path: "/graphql", responder: graphql)

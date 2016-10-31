@@ -12,18 +12,18 @@ extension MediaType {
 
 public struct GraphQLResponder<Root> : Responder {
     let schema: Schema<Root>
-    let graphiql: Bool
+    let graphiQL: Bool
     let rootValue: Root
     let contextValue: Any?
 
     public init(
         schema: Schema<Root>,
-        graphiql: Bool = false,
+        graphiQL: Bool = false,
         rootValue: Root,
         contextValue: Any? = nil
         ) {
         self.schema = schema
-        self.graphiql = graphiql
+        self.graphiQL = graphiQL
         self.rootValue = rootValue
         self.contextValue = contextValue
     }
@@ -78,7 +78,7 @@ public struct GraphQLResponder<Root> : Responder {
 
         // TODO: Parse the body from Content-Type
 
-        let showGraphiql = graphiql && !(raw ?? false)
+        let showGraphiql = graphiQL && !(raw ?? false) && request.accept.matches(other: .html)
 
         if !showGraphiql {
             guard let graphQLQuery = query else {
