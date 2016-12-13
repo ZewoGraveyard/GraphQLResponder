@@ -60,7 +60,7 @@ let schema = try Schema<Void> { schema in
         try query.field(
             name: "hello",
             type: String.self,
-            description: "Cliche or classic?"
+            description: "Cliche or classic?",
             resolve: { (_, _, _, _) in
                 return "world"
             }
