@@ -57,8 +57,8 @@ import GraphQLResponder
 
 let schema = try Schema<Void> { schema in
     schema.query = try ObjectType(name: "RootQueryType") { query in
-        try query.field(name: "hello", type: String.self) { _ in
-            "world"
+        try query.field(name: "hello", type: String.self) { (_, _, _, _) in
+            return "world"
         }
     }
 }
