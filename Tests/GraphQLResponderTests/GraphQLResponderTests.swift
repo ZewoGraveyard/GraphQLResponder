@@ -2,17 +2,19 @@ import XCTest
 import Graphiti
 @testable import GraphQLResponder
 
-let schema = try! Schema<Void> { schema in
-    schema.query = try ObjectType(name: "RootQueryType") { query in
-        try query.field(name: "hello", type: String.self) { _ in
-            "world"
+let schema = try! Schema<NoRoot, Request> { schema in
+    try schema.query { query in
+        try query.field(name: "hello", type: String.self) { _, _, request, _ in
+            XCTAssertEqual(request.method, .get)
+            XCTAssertEqual(request.path, "/graphql")
+            return "world"
         }
     }
 }
 
 let graphql = GraphQLResponder(schema: schema, rootValue: noRootValue)
 
-class GraphQLResponderTests: XCTestCase {
+class GraphQLResponderTests : XCTestCase {
     func testHello() throws {
         let query: Axis.Map = [
             "query": "{ hello }"
@@ -24,7 +26,7 @@ class GraphQLResponderTests: XCTestCase {
             ]
         ]
 
-        let request = Request(content: query)
+        let request = Request(url: "/graphql", content: query)!
         let response = try graphql.respond(to: request)
         XCTAssertEqual(response.content, expected)
     }
@@ -37,13 +39,42 @@ class GraphQLResponderTests: XCTestCase {
         let expected: Axis.Map = [
             "errors": [
                 [
-                    "message": "Cannot query field \"boyhowdy\" on type \"RootQueryType\".",
+                    "message": "Cannot query field \"boyhowdy\" on type \"Query\".",
                     "locations": [["line": 1, "column": 3]]
                 ]
             ]
         ]
 
-        let request = Request(content: query)
+        let request = Request(url: "/graphql", content: query)!
+        let response = try graphql.respond(to: request)
+        XCTAssertEqual(response.content, expected)
+    }
+
+    func testNoRequestContext() throws {
+        let schema = try Schema<NoRoot, NoContext> { schema in
+            try schema.query { query in
+                try query.field(name: "hello", type: String.self) { _, _, _, _ in
+                    return "world"
+                }
+            }
+        }
+
+        let graphql = GraphQLResponder(schema: schema, rootValue: noRootValue)
+
+        let query: Axis.Map = [
+            "query": "{ boyhowdy }"
+        ]
+
+        let expected: Axis.Map = [
+            "errors": [
+                [
+                    "message": "Cannot query field \"boyhowdy\" on type \"Query\".",
+                    "locations": [["line": 1, "column": 3]]
+                ]
+            ]
+        ]
+
+        let request = Request(url: "/graphql", content: query)!
         let response = try graphql.respond(to: request)
         XCTAssertEqual(response.content, expected)
     }

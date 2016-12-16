@@ -10,22 +10,22 @@ extension MediaType {
     }
 }
 
-public struct GraphQLResponder<Root> : Responder {
-    let schema: Schema<Root>
+public struct GraphQLResponder<Root, Context> : Responder {
+    let schema: Schema<Root, Context>
     let graphiQL: Bool
     let rootValue: Root
-    let contextValue: Any?
+    let context: Context?
 
     public init(
-        schema: Schema<Root>,
+        schema: Schema<Root, Context>,
         graphiQL: Bool = false,
         rootValue: Root,
-        contextValue: Any? = nil
-        ) {
+        context: Context? = nil
+    ) {
         self.schema = schema
         self.graphiQL = graphiQL
         self.rootValue = rootValue
-        self.contextValue = contextValue
+        self.context = context
     }
 
     public func respond(to request: Request) throws -> Response {
@@ -85,26 +85,62 @@ public struct GraphQLResponder<Root> : Responder {
                 throw HTTPError.badRequest(body: "Must provide query string.")
             }
 
-            let result = try schema.execute(
-                request: graphQLQuery,
-                rootValue: rootValue,
-                contextValue: contextValue ?? request,
-                variableValues: variables ?? [:],
-                operationName: operationName
-            )
+            let result: GraphQL.Map
+
+            if Context.self is Request.Type && context == nil {
+                result = try schema.execute(
+                    request: graphQLQuery,
+                    rootValue: rootValue,
+                    context: request as! Context,
+                    variables: variables ?? [:],
+                    operationName: operationName
+                )
+            } else if let context = context {
+                result = try schema.execute(
+                    request: graphQLQuery,
+                    rootValue: rootValue,
+                    context: context,
+                    variables: variables ?? [:],
+                    operationName: operationName
+                )
+            } else {
+                result = try schema.execute(
+                    request: graphQLQuery,
+                    rootValue: rootValue,
+                    variables: variables ?? [:],
+                    operationName: operationName
+                )
+            }
 
             return Response(content: convert(map: result))
         } else {
             var result: GraphQL.Map? = nil
 
             if let graphQLQuery = query {
-                result = try schema.execute(
-                    request: graphQLQuery,
-                    rootValue: rootValue,
-                    contextValue: contextValue ?? request,
-                    variableValues: variables ?? [:],
-                    operationName: operationName
-                )
+                if Context.self is Request.Type && context == nil {
+                    result = try schema.execute(
+                        request: graphQLQuery,
+                        rootValue: rootValue,
+                        context: request as! Context,
+                        variables: variables ?? [:],
+                        operationName: operationName
+                    )
+                } else if let context = context {
+                    result = try schema.execute(
+                        request: graphQLQuery,
+                        rootValue: rootValue,
+                        context: context,
+                        variables: variables ?? [:],
+                        operationName: operationName
+                    )
+                } else {
+                    result = try schema.execute(
+                        request: graphQLQuery,
+                        rootValue: rootValue,
+                        variables: variables ?? [:],
+                        operationName: operationName
+                    )
+                }
             }
 
             let html = renderGraphiQL(
