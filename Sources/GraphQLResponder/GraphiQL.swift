@@ -3,10 +3,42 @@ import Graphiti
 // Current latest version of GraphiQL.
 let graphiQLVersion = "0.7.1"
 
+let escapeMapping: [Character: String] = [
+    "\r": "\\r",
+    "\n": "\\n",
+    "\t": "\\t",
+    "\\": "\\\\",
+    "\"": "\\\"",
+
+    "\u{2028}": "\\u2028",
+    "\u{2029}": "\\u2029",
+
+    "\r\n": "\\r\\n"
+]
+
+func escape(_ source: String) -> String {
+    var string = "\""
+
+    for character in source.characters {
+        if let escapedSymbol = escapeMapping[character] {
+            string.append(escapedSymbol)
+        } else {
+            string.append(character)
+        }
+    }
+
+    string.append("\"")
+    return string
+}
+
 // Ensures string values are safe to be used within a <script> tag.
 func safeSerialize(_ data: String?) -> String {
     //return data ? JSON.stringify(data).replace(/\//g, '\\/') : null;
-    return data ?? "null"
+    guard let data = data else {
+        return "null"
+    }
+
+    return escape(data)
 }
 
 /**
